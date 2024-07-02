@@ -1,0 +1,100 @@
+/*
+=============== 
+Fonts
+===============
+*/
+@import url("https://fonts.googleapis.com/css?family=Lato:400,700&display=swap");
+
+/*
+=============== 
+Global Styles
+===============
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Lato", sans-serif !important;
+  background: #fafafa;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+div,
+p,
+span,
+button {
+  font-family: "Lato", sans-serif !important;
+}
+
+button:focus,
+button:focus-visible {
+  outline: unset !important;
+}
+
+ul {
+  list-style-type: none;
+}
+a {
+  text-decoration: none;
+}
+
+img {
+  width: 100%;
+  display: block;
+}
+
+.section {
+  padding: 2rem 0;
+}
+
+.footer {
+  background: hsl(209, 61%, 16%);
+  text-align: center;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  color: #fff;
+}
+
+/* here we are displaying our links and icons in row using display flex */
+.footer-links,
+.footer-icons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.footer-link {
+  color: #fff;
+  text-transform: capitalize;
+  margin-right: 1rem;
+  font-size: 1rem;
+  letter-spacing: 0.25rem;
+  transition: all 0.3s linear;
+}
+.footer-icon {
+  color: #d9dddf;
+  margin-right: 1rem;
+  font-size: 2rem;
+  transition: all 0.3s linear;
+}
+.footer-icon:hover {
+  color: #a9acae;
+}
+.copyright {
+  color: #fff;
+  text-transform: capitalize;
+  letter-spacing: 0.25rem;
+}
+
+.MuiTypography-root {
+  margin-bottom: 0 !important;
+}
