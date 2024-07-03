@@ -1,17 +1,6 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  Grid,
-  Rating,
-  Stack,
-  Typography,
-} from "@mui/material";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { Alert, Button, Chip, Grid, Stack, Typography } from "@mui/material";
+import React, { useState } from "react";
 import { useHistory, useParams } from "react-router";
-import { getProductDetailsUrl } from "../constants";
 import useFetchProductDetails from "../hooks/useFetchProductDetails";
 import CircularProgress from "@mui/material/CircularProgress";
 import { isEmpty } from "lodash";
@@ -21,18 +10,13 @@ import Snackbar from "./Snackbar";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
-  console.log("productId : ", { id });
   const history = useHistory();
   const { loading, data, error } = useFetchProductDetails(id);
   const { cartItemList, setCartItemList } = useAppContext();
   const itProductAlreadyInCart = cartItemList.some(
     (prod) => prod.id === parseInt(id)
   );
-  console.log(
-    "is item in cart : ",
-    cartItemList.some((prod) => prod.id === parseInt(id))
-  );
-  console.log({ loading, data, error });
+
   const { title, description, category, price, image, rating, stock } =
     data || {};
   const [snackbarInfo, setSnackbarInfo] = useState({
@@ -144,7 +128,6 @@ const ProductDetails = () => {
                   backgroundPosition: "center",
                   width: "100%",
                   objectFit: "cover",
-                  // height: "400px",
                 }}
               />
             </Stack>
@@ -182,7 +165,7 @@ const ProductDetails = () => {
                     &#8377; {price}
                   </Typography>
                   <Typography variant="caption" display="block" color="red">
-                    only {stock} left
+                    {stock === 0 ? "out of stock" : `only ${stock} left`}
                   </Typography>
                 </Stack>
 

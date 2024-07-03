@@ -1,30 +1,18 @@
-import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
-import { Box, IconButton, Stack } from "@mui/material";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Box, Stack } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
-
-import { IProduct, ITshirt } from "../types";
-import Snackbar from "./Snackbar";
-import { useAppContext } from "../context";
+import { IProduct } from "../types";
 import Product from "./Product";
 import { useHistory } from "react-router";
+import { NO_SEARCH_RESULTS } from "../constants";
 
 const SearchResults = () => {
   const history = useHistory();
   const state: { searchResults: IProduct[] } = history.location.state || {
     searchResults: [],
   };
-
   const productsList: IProduct[] = state.searchResults || [];
-  console.log("SearchResults : ", { state });
 
   return (
     <Box
@@ -46,12 +34,43 @@ const SearchResults = () => {
             rowGap: "24px",
           }}
         >
-          <Typography variant="h6" display="inline-block">
-            No products found!!
-          </Typography>
-          <Button variant="contained" size="small" href="/products">
-            Back to products
-          </Button>
+          <Stack
+            sx={{ width: "100%" }}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Stack sx={{ width: "70%", gap: "12px" }}>
+              <Typography variant="h6" sx={{ margin: "0 auto" }}>
+                No products found!
+              </Typography>
+              <img
+                src={NO_SEARCH_RESULTS}
+                alt="no products"
+                style={{
+                  display: "block",
+                  backgroundSize: "cover",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                  objectFit: "cover",
+                }}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => history.push("/products")}
+                sx={{
+                  margin: "0 auto",
+                  width: "fit-content",
+                  background: "#0d0d0d",
+                  "&:hover": {
+                    background: "#0d0d0d",
+                  },
+                }}
+              >
+                Back to products
+              </Button>
+            </Stack>
+          </Stack>
         </Stack>
       ) : (
         <Stack>
@@ -60,7 +79,20 @@ const SearchResults = () => {
               <Typography variant="h6">
                 {productsList.length} products found.
               </Typography>
-              <Button variant="outlined" size="small" href="/products">
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => history.push("/products")}
+                sx={{
+                  color: "#242525",
+                  borderColor: "#242525",
+                  "&:hover": {
+                    background: "#f2f6f8",
+                    borderColor: "#242525",
+                  },
+                }}
+              >
                 Back to products
               </Button>
             </Stack>

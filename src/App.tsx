@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import { Box, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import "./App.css";
 
 import { AppProvider } from "./context";
 import Cart from "./components/Cart";
 import Footer from "./components/Footer";
-import Layout from "./components/Layout";
+import Homepage from "./components/Homepage";
 import Navbar from "./components/Navbar";
 import NotFoundPage from "./components/NotFoundPage";
 import SearchResults from "./components/SearchResults";
@@ -21,10 +21,10 @@ function App() {
           <Navbar />
           <Switch>
             <Route exact path="/">
-              <Layout />
+              <Homepage />
             </Route>
             <Route exact path="/products">
-              <Layout />
+              <Homepage />
             </Route>
             <Route exact path="/products/:id">
               <ProductDetails />

@@ -1,19 +1,8 @@
-import AddIcon from "@mui/icons-material/Add";
-import Button from "@mui/material/Button";
-import { Box, IconButton, Stack } from "@mui/material";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
+import { Box, Pagination } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { styled } from "@mui/material/styles";
-import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
 
-import { IProduct, ITshirt } from "../types";
-import Snackbar from "./Snackbar";
-import { useAppContext } from "../context";
+import { IProduct } from "../types";
 import Product from "./Product";
 
 const ProductsListing = ({
@@ -43,7 +32,8 @@ const ProductsListing = ({
         >
           <CircularProgress sx={{ color: "#303132" }} />
         </Box>
-      ) : (
+      ) : null}
+      {!loading && productsList.length > 0 ? (
         <Grid
           container
           rowSpacing={6}
@@ -53,8 +43,9 @@ const ProductsListing = ({
           {productsList?.map((product) => (
             <Product {...product} key={product.id} product={product} />
           ))}
+          <Pagination count={10} />
         </Grid>
-      )}
+      ) : null}
     </Box>
   );
 };

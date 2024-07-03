@@ -25,3 +25,7 @@ export interface IAppProvider {
   cartItemList: Array<ICartItem>;
   setCartItemList: React.Dispatch<React.SetStateAction<ICartItem[]>>;
 }
+
+export interface ISearchBarProps {
+  products: Array<IProduct>;
+}

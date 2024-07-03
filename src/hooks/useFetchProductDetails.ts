@@ -1,12 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-import {
-  emptyProductDetails,
-  getProductDetailsUrl,
-  getProductsUrl,
-} from "../constants";
-import { IProduct, IProductData } from "../types";
+import { getProductDetailsUrl } from "../constants";
+import { IProduct } from "../types";
 
 const useFetchProductDetails = (productId: string) => {
   const [state, setState] = useState<{
@@ -41,12 +37,11 @@ const useFetchProductDetails = (productId: string) => {
   };
 
   useEffect(() => {
-    setState((prevState) => ({
-      ...prevState,
+    setState({
       error: "",
       loading: true,
       data: null,
-    }));
+    });
     fetchProductDetails();
   }, [productId]);
 

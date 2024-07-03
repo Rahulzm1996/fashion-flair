@@ -1,34 +1,17 @@
 import Box from "@mui/material/Box";
-import CloseIcon from "@mui/icons-material/Close";
-import Drawer from "@mui/material/Drawer";
-import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import Input from "@mui/material/Input";
 import IconButton from "@mui/material/IconButton";
 import React, { useState } from "react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import { Stack, Typography } from "@mui/material";
-import { useHistory, useRouteMatch } from "react-router-dom";
-
-import Filters from "./Filters";
+import { useHistory } from "react-router-dom";
 import { ISearchBarProps } from "../types";
 
-const SearchBar = ({
-  products,
-  productsList,
-  setproductsList,
-}: ISearchBarProps) => {
+const SearchBar = ({ products }: ISearchBarProps) => {
   const [searchedText, setSearchedText] = useState("");
   const history = useHistory();
-  const { url, path } = useRouteMatch();
-  console.log({ url, path });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchedText(e.target.value);
-
-    //when clear the input field, show all the products
-    if (e.target.value === "") {
-      setproductsList(products);
-    }
   };
 
   const handleproductsSearch = () => {
@@ -39,8 +22,6 @@ const SearchBar = ({
         value.toString().toLowerCase().includes(searchedText.toLowerCase())
       )
     );
-    // setproductsList(filteredsearchResults);
-    console.log({ filteredSearchResults });
 
     history.push("/search", { searchResults: filteredSearchResults });
   };
@@ -66,7 +47,7 @@ const SearchBar = ({
           }}
           placeholder="Search for products.."
           inputProps={{ "aria-label": "search box" }}
-          sx={{ width: "40%" }}
+          sx={{ width: { xs: "100%", sm: "50%" } }}
         />
 
         {/* //keeping search button disable if searched it empty */}

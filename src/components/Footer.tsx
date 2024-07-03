@@ -1,4 +1,3 @@
-import React from "react";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import ConnectWithoutContactOutlinedIcon from "@mui/icons-material/ConnectWithoutContactOutlined";
 import DatasetLinkedOutlinedIcon from "@mui/icons-material/DatasetLinkedOutlined";
