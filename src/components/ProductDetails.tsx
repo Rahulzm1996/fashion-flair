@@ -109,12 +109,11 @@ const ProductDetails = () => {
               flexDirection: { xs: "column", sm: "row" },
               gap: { xs: "0", sm: "24px" },
             }}
-            height="100%"
-            width="100%"
+            height="500px"
+            // width="100%"
           >
             <Stack
               sx={{
-                height: "100%",
                 width: { xs: "100%", sm: "50%", justifyContent: "center" },
               }}
             >
@@ -122,12 +121,12 @@ const ProductDetails = () => {
                 src={image}
                 alt="product-image"
                 style={{
+                  width: "100%",
+                  height: "100%",
                   display: "block",
                   backgroundSize: "cover",
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: "center",
-                  width: "100%",
-                  objectFit: "cover",
                 }}
               />
             </Stack>

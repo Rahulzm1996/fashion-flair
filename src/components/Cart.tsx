@@ -50,11 +50,11 @@ const Cart = () => {
 
       {cartItemList.length === 0 ? (
         <Stack
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", minHeight: "calc(100%  - 64px - 160px)" }}
           justifyContent="center"
           alignItems="center"
         >
-          <Stack sx={{ width: "70%", gap: "12px" }}>
+          <Stack sx={{ width: "50%", height: "50%", gap: "12px" }}>
             <Typography variant="h6" sx={{ margin: "0 auto" }}>
               There are no items in the cart. Please add items to cart.
             </Typography>
@@ -62,6 +62,8 @@ const Cart = () => {
               src={NO_ITEM_IN_CART}
               alt="no products"
               style={{
+                width: "100%",
+                height: "100%",
                 display: "block",
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
@@ -74,18 +76,7 @@ const Cart = () => {
       ) : (
         <Stack spacing={4}>
           {cartItemList.map((product) => {
-            const {
-              id,
-              description,
-              category,
-              image,
-              price,
-              rating,
-              stock,
-              title,
-            } = product;
-            console.log({ product });
-
+            const { id } = product;
             return (
               <CartItem
                 key={id}
@@ -134,16 +125,6 @@ const CartItem = (props: ICartProps) => {
   const [quantity, setQuantity] = useState(1);
 
   const handleRemoveClick = () => {
-    //show msg when selected qty is 0
-    // if (quantity <=1) {
-    //   setSnackbarInfo({
-    //     open: true,
-    //     message: "quantity cannot be 0 to add",
-    //     variant: "error",
-    //   });
-    //   return;
-    // }
-    //subtract qty from cart
     const updatedCartItemList = cartItemList.map((el) => {
       if (el.id === id) {
         return { ...el, stock: el.stock + 1 };
