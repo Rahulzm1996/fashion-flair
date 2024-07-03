@@ -51,7 +51,7 @@ const ProductsListing = ({
           sx={{ height: "100vh", overflowY: "scroll" }}
         >
           {productsList?.map((product) => (
-            <Product {...product} key={product.id} />
+            <Product {...product} key={product.id} product={product} />
           ))}
         </Grid>
       )}

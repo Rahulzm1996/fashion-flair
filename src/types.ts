@@ -16,14 +16,10 @@ export interface IProduct {
     rate: number;
     count: number;
   };
+  product: IProduct;
 }
 
-export interface ICartItem {
-  id: number;
-  qty: number;
-  total: number;
-  product: Partial<IProduct>;
-}
+export interface ICartItem extends IProduct {}
 
 export interface IAppProvider {
   cartItemList: Array<ICartItem>;

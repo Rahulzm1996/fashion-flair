@@ -24,8 +24,19 @@ const ProductDetails = () => {
   const { title, description, category, price, image, rating, stock } =
     data || {};
 
+  const handleAddToCart = () => {
+    //
+  };
+
   return (
-    <Grid container sx={{ flex: 1, padding: "24px" }}>
+    <Grid
+      container
+      sx={{
+        padding: "24px",
+        minHeight: "calc(100%  - 64px - 160px)",
+        flex: 1,
+      }}
+    >
       {loading ? (
         <Stack
           width="100%"

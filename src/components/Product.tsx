@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
-import { Box, IconButton, Stack } from "@mui/material";
+import { Box, Chip, IconButton, Stack, Tooltip } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
@@ -15,6 +15,7 @@ import { IProduct, ITshirt } from "../types";
 import Snackbar from "./Snackbar";
 import { useAppContext } from "../context";
 import { StyledCard } from "./styles";
+import StarPurple500SharpIcon from "@mui/icons-material/StarPurple500Sharp";
 
 const Product = ({
   id,
@@ -25,8 +26,24 @@ const Product = ({
   rating,
   stock,
   title,
+  product,
 }: IProduct) => {
   const { cartItemList, setCartItemList } = useAppContext();
+  const isProductAlreadyInCart = cartItemList.some(
+    (product) => product.id === id
+  );
+  console.log({
+    cartItemList,
+    id,
+    description,
+    category,
+    image,
+    price,
+    rating,
+    stock,
+    title,
+    isProductAlreadyInCart,
+  });
 
   const [count, setCount] = useState(0);
 
@@ -38,7 +55,16 @@ const Product = ({
   const [isAddToCartClicked, setIsAddToCartClicked] = useState(false);
 
   const handleAddToCartClick = () => {
-    setIsAddToCartClicked(true);
+    // setIsAddToCartClicked(true);
+    setSnackbarInfo({
+      open: true,
+      message: `${title} tshirt has been added to the cart`,
+      variant: "success",
+    });
+    setCartItemList((prevList) => [
+      ...prevList,
+      { ...product, stock: product.stock - 1 },
+    ]);
   };
 
   const handleRemoveClick = () => {
@@ -148,21 +174,75 @@ const Product = ({
             gap: "4px",
           }}
         >
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            width="100%"
-            alignItems="center"
-          >
-            <Typography gutterBottom variant="subtitle2" component="div">
+          <Stack width="100%" gap="8px">
+            <Typography gutterBottom variant="h6" component="div">
               {title}
             </Typography>
-            <Typography gutterBottom variant="h6" component="div">
-              Rs {price}
-            </Typography>
-          </Stack>
+            {description ? (
+              <Tooltip title={description}>
+                <Typography
+                  gutterBottom
+                  variant="caption"
+                  component="div"
+                  width={"100%"}
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: "2",
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  {description}
+                </Typography>
+              </Tooltip>
+            ) : null}
 
-          <Stack
+            <Stack
+              gap="12px"
+              alignItems="center"
+              direction="row"
+              flexWrap="wrap"
+            >
+              <Chip
+                icon={<StarPurple500SharpIcon />}
+                label={rating.rate}
+                size="small"
+              />{" "}
+              <Typography variant="caption">{rating.count} Rating</Typography>
+              <Chip label={category} size="small" variant="outlined" />
+            </Stack>
+
+            <Stack direction="row" gap="8px" alignItems={"center"}>
+              <Stack direction="row" alignItems={"center"}>
+                &#8377;<Typography variant="h6"> {price}</Typography>
+              </Stack>
+              <Typography
+                variant="caption"
+                width={"100%"}
+                color={stock === 0 ? "red" : "green"}
+              >
+                {stock === 0 ? "out of stock" : `${stock} in stock`}
+              </Typography>
+            </Stack>
+          </Stack>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleAddToCartClick}
+            fullWidth
+            disabled={stock === 0}
+            sx={{
+              background: "#0d0d0d",
+              "&:hover": {
+                background: "#0d0d0d",
+              },
+            }}
+          >
+            Add to cart
+          </Button>
+
+          {/* <Stack
             direction="row"
             justifyContent="space-between"
             width="100%"
@@ -225,7 +305,7 @@ const Product = ({
                 </IconButton>
               </Box>
             )}
-          </Stack>
+          </Stack> */}
         </CardContent>
       </StyledCard>
 
