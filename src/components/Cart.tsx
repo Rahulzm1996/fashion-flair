@@ -25,6 +25,16 @@ const Cart = () => {
     variant: "success",
   });
 
+  const handleDeleteProduct = (id: number, name: string | undefined) => {
+    setSnackbarInfo({
+      open: true,
+      message: `${name} has been removed from cart`,
+      variant: "info",
+    });
+    const newCartItemList = cartItemList.filter((item) => item.id !== id);
+    setCartItemList([...newCartItemList]);
+  };
+
   return (
     <Box
       sx={{
@@ -60,7 +70,13 @@ const Cart = () => {
             } = product;
             console.log({ product });
 
-            return <CartItem key={id} product={product} />;
+            return (
+              <CartItem
+                key={id}
+                product={product}
+                handleDeleteProduct={handleDeleteProduct}
+              />
+            );
 
             // return (
             //   <Stack
@@ -230,6 +246,7 @@ const Cart = () => {
 
 export interface ICartProps {
   product: IProduct;
+  handleDeleteProduct: (id: number, name: string | undefined) => void;
 }
 
 const CartItem = (props: ICartProps) => {
@@ -239,45 +256,31 @@ const CartItem = (props: ICartProps) => {
     message: "",
     variant: "success",
   });
-  const { product } = props;
+  const { product, handleDeleteProduct } = props;
   const { id, description, category, image, price, rating, stock, title } =
     product || {};
   const [quantity, setQuantity] = useState(1);
 
   const handleRemoveClick = () => {
     //show msg when selected qty is 0
-    if (count === 0) {
-      setSnackbarInfo({
-        open: true,
-        message: "quantity cannot be 0 to add",
-        variant: "error",
-      });
-      return;
-    }
+    // if (quantity <=1) {
+    //   setSnackbarInfo({
+    //     open: true,
+    //     message: "quantity cannot be 0 to add",
+    //     variant: "error",
+    //   });
+    //   return;
+    // }
+    //subtract qty from cart
+    const updatedCartItemList = cartItemList.map((el) => {
+      if (el.id === id) {
+        return { ...el, stock: el.stock + 1 };
+      }
+      return el;
+    });
 
-    const updatedCount = count - 1;
-    if (updatedCount === 0) {
-      //remove tshirt from cart
-      const newCartList = cartItemList.filter((el) => el.id !== id);
-      setCartItemList([...newCartList]);
-      setSnackbarInfo({
-        open: true,
-        message: `${name} tshirt has been removed from the cart`,
-        variant: "info",
-      });
-    } else {
-      //subtract qty from cart
-      const updatedCartItemList = cartItemList.map((el) => {
-        if (el.id === id && count - 1 !== 0) {
-          return { ...el, qty: count - 1, total: price * (count - 1) };
-        }
-        return el;
-      });
-
-      setCartItemList([...updatedCartItemList]);
-    }
-
-    setCount((count) => count - 1);
+    setCartItemList([...updatedCartItemList]);
+    setQuantity((quantity) => quantity - 1);
   };
 
   const handleAddClick = () => {
@@ -288,6 +291,7 @@ const CartItem = (props: ICartProps) => {
         message: "no more stock available",
         variant: "warning",
       });
+      return;
     }
 
     //update tshirt qty and price in cart if its available in cart
@@ -302,16 +306,6 @@ const CartItem = (props: ICartProps) => {
     });
     setCartItemList([...updatedCartItemList]);
     setQuantity((quantity) => quantity + 1);
-  };
-
-  const handleDeleteProduct = (id: number, name: string | undefined) => {
-    const newCartItemList = cartItemList.filter((item) => item.id !== id);
-    setCartItemList([...newCartItemList]);
-    setSnackbarInfo({
-      open: true,
-      message: `${name} has been removed from cart`,
-      variant: "info",
-    });
   };
 
   return (
@@ -391,7 +385,7 @@ const CartItem = (props: ICartProps) => {
         </Stack>
       </Stack>
       <Stack gap="24px">
-        <Stack direction="row" gap="8px">
+        <Stack direction="row" gap="24px">
           <Box
             sx={{
               color: "#fff",
@@ -414,8 +408,8 @@ const CartItem = (props: ICartProps) => {
               aria-label="sub"
               size="small"
               sx={{ color: "#fff" }}
-              // onClick={handleRemoveClick}
-              // disabled={count === 0}
+              onClick={handleRemoveClick}
+              disabled={quantity === 1}
             >
               <RemoveIcon fontSize="inherit" />
             </IconButton>
@@ -427,7 +421,7 @@ const CartItem = (props: ICartProps) => {
               size="small"
               sx={{ color: "#fff" }}
               onClick={handleAddClick}
-              disabled={stock === 0}
+              // disabled={stock === 0}
             >
               <AddIcon fontSize="inherit" />
             </IconButton>
@@ -460,7 +454,7 @@ const CartItem = (props: ICartProps) => {
           <Stack direction="row" alignItems="center">
             &#8377;
             <Typography variant="h6" gutterBottom component="span">
-              {price * quantity}
+              {(price * quantity).toFixed(2)}
             </Typography>
           </Stack>
         </Stack>
