@@ -1,4 +1,11 @@
-import { Stack, Typography } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  Pagination,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { IProduct } from "../types";
@@ -6,14 +13,24 @@ import SearchBar from "./SearchBar";
 import ProductsListing from "./ProductsListing";
 import useFetchProducts from "../hooks/useFetchProducts";
 import { NO_PRODUCTS_IMAGE_URL } from "../constants";
+import Product from "./Product";
 
+const PAGE_SIZE = 10;
 const Homepage = () => {
-  const { loading, productsData } = useFetchProducts();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { loading, productsData } = useFetchProducts({
+    page: currentPage,
+    size: PAGE_SIZE,
+  });
   const [productsList, setproductsList] = useState<Array<IProduct>>([]);
 
   useEffect(() => {
     setproductsList(productsData?.resources);
   }, [productsData]);
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <Stack
@@ -49,7 +66,46 @@ const Homepage = () => {
           </Stack>
         </Stack>
       ) : null}
-      <ProductsListing loading={loading} productsList={productsList} />
+      <Box
+        sx={{
+          width: "100%",
+          flexGrow: 1,
+          padding: "16px",
+          overflowY: "auto",
+        }}
+      >
+        {loading ? (
+          <Box
+            sx={{
+              minHeight: "400px",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CircularProgress sx={{ color: "#303132" }} />
+          </Box>
+        ) : null}
+        {!loading && productsList.length > 0 ? (
+          <Grid
+            container
+            rowSpacing={6}
+            columnSpacing={6}
+            sx={{ height: "100vh", overflowY: "scroll" }}
+          >
+            {productsList?.map((product) => (
+              <Product {...product} key={product.id} product={product} />
+            ))}
+          </Grid>
+        ) : null}
+        <Pagination
+          count={Math.ceil(productsData.total / PAGE_SIZE)}
+          page={currentPage}
+          onChange={handlePageChange}
+          sx={{ display: "flex", justifyContent: "center", paddingTop: "24px" }}
+        />
+      </Box>
     </Stack>
   );
 };

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getProductsUrl } from "../constants";
 import { IProductData } from "../types";
 
-const useFetchProducts = () => {
+const useFetchProducts = ({ page, size }: { page: number; size: number }) => {
   const [data, setData] = useState<IProductData>({
     total: 0,
     count: 0,
@@ -14,7 +14,9 @@ const useFetchProducts = () => {
 
   const fetchproducts = async () => {
     try {
-      const { data, status } = await axios.get(getProductsUrl, { params: {} });
+      const { data, status } = await axios.get(getProductsUrl, {
+        params: { page, size },
+      });
       console.log({ status, data });
       if (status === 200) {
         setData(data);
@@ -30,7 +32,7 @@ const useFetchProducts = () => {
     setLoading(true);
     setData({ total: 0, count: 0, resources: [] });
     fetchproducts();
-  }, []);
+  }, [page, size]);
 
   return { loading, productsData: data };
 };

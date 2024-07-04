@@ -181,7 +181,10 @@ const Product = ({
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => history.push("/cart")}
+                onClick={(e) => {
+                  e.preventDefault();
+                  history.push("/cart");
+                }}
                 fullWidth
                 sx={{
                   background: "#0d0d0d",

@@ -43,7 +43,11 @@ const ProductsListing = ({
           {productsList?.map((product) => (
             <Product {...product} key={product.id} product={product} />
           ))}
-          <Pagination count={10} />
+          <Pagination
+            count={Math.ceil(datas.length / pageSize)}
+            page={page}
+            onChange={handleChange}
+          />
         </Grid>
       ) : null}
     </Box>
