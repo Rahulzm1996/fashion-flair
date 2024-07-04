@@ -5,7 +5,7 @@ export interface IProductData {
 }
 
 export interface IProduct {
-  id: number;
+  id: number | string;
   title: string;
   price: number;
   description: string;
@@ -17,6 +17,7 @@ export interface IProduct {
     count: number;
   };
   product: IProduct;
+  quantity: number;
 }
 
 export interface ICartItem extends IProduct {}

@@ -11,8 +11,6 @@ const Homepage = () => {
   const { loading, productsData } = useFetchProducts();
   const [productsList, setproductsList] = useState<Array<IProduct>>([]);
 
-  console.log({ loading, productsData });
-
   useEffect(() => {
     setproductsList(productsData?.resources);
   }, [productsData]);

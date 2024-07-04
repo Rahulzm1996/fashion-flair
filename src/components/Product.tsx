@@ -8,11 +8,15 @@ import { useState } from "react";
 import StarPurple500SharpIcon from "@mui/icons-material/StarPurple500Sharp";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
+import LoadingButton from "@mui/lab/LoadingButton";
+import SaveIcon from "@mui/icons-material/Save";
+import axios from "axios";
 
 import { IProduct } from "../types";
 import Snackbar from "./Snackbar";
 import { useAppContext } from "../context";
 import { StyledCard } from "./styles";
+import { getAddToCartUrl } from "../constants";
 
 const Product = ({
   id,
@@ -23,10 +27,12 @@ const Product = ({
   rating,
   stock,
   title,
-  product,
 }: IProduct) => {
   const history = useHistory();
-  const { setCartItemList } = useAppContext();
+  const { cartItemList, setCartItemList } = useAppContext();
+  const isProductAlreadyInCart = cartItemList.some(
+    (prod) => prod.id === parseInt(id)
+  );
 
   const [snackbarInfo, setSnackbarInfo] = useState({
     open: false,
@@ -35,18 +41,68 @@ const Product = ({
   });
   const [isAddToCartClicked, setIsAddToCartClicked] = useState(false);
 
+  const [state, setState] = useState<{
+    loading: boolean;
+    cartData: { count: number; resources: Array<IProduct> };
+  }>({
+    loading: false,
+    cartData: {
+      count: 0,
+      resources: [],
+    },
+  });
+  const { loading: addToCartLoading } = state || {};
+
+  const addProductToCart = async ({
+    id,
+    quantity,
+  }: {
+    id: number;
+    quantity: number;
+  }) => {
+    setState({
+      loading: true,
+      cartData: {
+        count: 0,
+        resources: [],
+      },
+    });
+    try {
+      const { data, status } = await axios.post(getAddToCartUrl(), {
+        id: id,
+        quantity: quantity,
+      });
+      if (status === 201) {
+        setCartItemList(data?.resources || []);
+        setIsAddToCartClicked(true);
+        setState((prevState) => ({
+          ...prevState,
+          cartData: data,
+        }));
+        setSnackbarInfo({
+          open: true,
+          message: `${title} has been added to the cart`,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error("error occured while adding product to cart ", error);
+      setSnackbarInfo({
+        open: true,
+        message: `error occured while adding ${title} into cart`,
+        variant: "error",
+      });
+    } finally {
+      setState((prevState) => ({
+        ...prevState,
+        loading: false,
+      }));
+    }
+  };
+
   const handleAddToCartClick = (e) => {
     e.preventDefault();
-    setIsAddToCartClicked(true);
-    setSnackbarInfo({
-      open: true,
-      message: `${title} tshirt has been added to the cart`,
-      variant: "success",
-    });
-    setCartItemList((prevList) => [
-      ...prevList,
-      { ...product, stock: product.stock - 1 },
-    ]);
+    addProductToCart({ id: parseInt(id), quantity: 1 });
   };
 
   return (
@@ -121,7 +177,7 @@ const Product = ({
                 </Typography>
               </Stack>
             </Stack>
-            {isAddToCartClicked ? (
+            {isAddToCartClicked || isProductAlreadyInCart ? (
               <Button
                 variant="contained"
                 size="small"
@@ -137,21 +193,32 @@ const Product = ({
                 Go to cart
               </Button>
             ) : (
-              <Button
-                variant="contained"
+              <LoadingButton
                 size="small"
-                onClick={handleAddToCartClick}
                 fullWidth
-                disabled={stock === 0}
+                loading={addToCartLoading}
+                loadingPosition="start"
+                startIcon={<SaveIcon color="inherit" />}
+                variant="outlined"
+                onClick={handleAddToCartClick}
+                disabled={stock === 0 || isProductAlreadyInCart}
                 sx={{
+                  color: "white !important",
                   background: "#0d0d0d",
                   "&:hover": {
                     background: "#0d0d0d",
                   },
+                  "& .MuiLoadingButton-loadingIndicator": {
+                    color: "white",
+                    left: "unset",
+                  },
+                  "&.Mui-disabled": {
+                    cursor: "not-allowed !important",
+                  },
                 }}
               >
                 Add to cart
-              </Button>
+              </LoadingButton>
             )}
           </CardContent>
         </StyledCard>

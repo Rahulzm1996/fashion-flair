@@ -1,22 +1,28 @@
 import {
   Box,
   Button,
-  Chip,
+  CircularProgress,
   IconButton,
   Stack,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import Divider from "@mui/material/Divider";
 
 import { useAppContext } from "../context";
 import Snackbar from "./Snackbar";
-import { useState } from "react";
-import StarPurple500SharpIcon from "@mui/icons-material/StarPurple500Sharp";
+import { useEffect, useState } from "react";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import { IProduct } from "../types";
-import { NO_ITEM_IN_CART } from "../constants";
+import {
+  NO_ITEM_IN_CART,
+  getAddToCartUrl,
+  getCartDetailsUrl,
+  removeItemFromCartUrl,
+} from "../constants";
+import axios from "axios";
+import { isEmpty } from "lodash";
+import { ICartProps } from "./types";
 
 const Cart = () => {
   const { cartItemList, setCartItemList } = useAppContext();
@@ -26,139 +32,247 @@ const Cart = () => {
     variant: "success",
   });
 
-  const handleDeleteProduct = (id: number, name: string | undefined) => {
-    setSnackbarInfo({
-      open: true,
-      message: `${name} has been removed from cart`,
-      variant: "info",
+  const [state, setState] = useState<{
+    loading: boolean;
+    cartData: { count: number; resources: Array<IProduct> };
+    incrementalProductUpdate: boolean;
+  }>({
+    loading: false,
+    cartData: {
+      count: 0,
+      resources: [],
+    },
+    incrementalProductUpdate: true,
+  });
+  const { loading, incrementalProductUpdate } = state;
+
+  //do it on mount only
+  const fetchCartItems = async () => {
+    try {
+      const { data, status } = await axios.get(getCartDetailsUrl());
+      if (status === 200) {
+        setCartItemList(data?.resources || []);
+        setState((prevState) => ({
+          ...prevState,
+          cartData: data,
+        }));
+      }
+      //handler other error codes here
+    } catch (error) {
+      console.error("error occured while fetching cart items ", error);
+      setSnackbarInfo({
+        open: true,
+        message: `Some error occured while fetching cart item`,
+        variant: "error",
+      });
+    } finally {
+      setState((prevState) => ({
+        ...prevState,
+        loading: false,
+      }));
+    }
+  };
+
+  useEffect(() => {
+    setState({
+      loading: true,
+      cartData: {
+        count: 0,
+        resources: [],
+      },
     });
-    const newCartItemList = cartItemList.filter((item) => item.id !== id);
-    setCartItemList([...newCartItemList]);
+    fetchCartItems();
+  }, []);
+
+  const handleDeleteProduct = async (id: string, name: string | undefined) => {
+    try {
+      const { data, status } = await axios.delete(removeItemFromCartUrl(id));
+      if (status === 200) {
+        setCartItemList(data?.resources || []);
+
+        setSnackbarInfo({
+          open: true,
+          message: `${name} has been removed from cart`,
+          variant: "info",
+        });
+      }
+    } catch (error) {
+      console.error("error occured while fetching cart items ", error);
+      setSnackbarInfo({
+        open: true,
+        message: `Error occured while removing ${name} from cart`,
+        variant: "error",
+      });
+    }
+  };
+
+  const addProductToCart = async ({
+    id,
+    quantity,
+  }: {
+    id: number | string;
+    quantity: number;
+  }) => {
+    setState((prevState) => ({
+      ...prevState,
+      incrementalProductUpdate: true,
+    }));
+    try {
+      const { data, status } = await axios.put(getAddToCartUrl(), {
+        id: id,
+        quantity: quantity,
+      });
+      if (status === 200) {
+        setCartItemList(data?.resources || []);
+      }
+    } catch (error) {
+      console.error("error occured while adding product to cart ", error);
+      setSnackbarInfo({
+        open: true,
+        message: `Some error occured while updating quantity`,
+        variant: "error",
+      });
+    } finally {
+      setState((prevState) => ({
+        ...prevState,
+        incrementalProductUpdate: false,
+      }));
+    }
   };
 
   return (
     <Box
       sx={{
         minHeight: "calc(100%  - 64px - 160px)",
-        padding: "2rem 4rem",
         flex: 1,
+        position: "relative",
       }}
     >
-      {snackbarInfo.open && (
-        <Snackbar {...snackbarInfo} setSnackbarInfo={setSnackbarInfo} />
-      )}
-
-      {cartItemList.length === 0 ? (
-        <Stack
-          sx={{ width: "100%", minHeight: "calc(100%  - 64px - 160px)" }}
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Stack sx={{ width: "50%", height: "50%", gap: "12px" }}>
-            <Typography variant="h6" sx={{ margin: "0 auto" }}>
-              There are no items in the cart. Please add items to cart.
-            </Typography>
-            <img
-              src={NO_ITEM_IN_CART}
-              alt="no products"
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "block",
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                objectFit: "cover",
-              }}
-            />
-          </Stack>
-        </Stack>
-      ) : (
-        <Stack spacing={4}>
-          {cartItemList.map((product) => {
-            const { id } = product;
-            return (
-              <CartItem
-                key={id}
-                product={product}
-                handleDeleteProduct={handleDeleteProduct}
-              />
-            );
-          })}
-
-          <Divider sx={{ borderColor: "unset", borderWidth: "1px" }} />
-
+      <Box
+        sx={{
+          padding: "2rem 4rem",
+        }}
+      >
+        {incrementalProductUpdate && (
           <Stack
-            direction="row"
-            spacing={2}
-            margin="0 auto"
+            sx={{
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              position: "absolute",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CircularProgress />
+          </Stack>
+        )}
+        {snackbarInfo.open && (
+          <Snackbar {...snackbarInfo} setSnackbarInfo={setSnackbarInfo} />
+        )}
+
+        {loading ? (
+          <Stack
+            width="100%"
+            height="400px"
+            alignItems="center"
             justifyContent="center"
           >
-            <Typography variant="subtitle2" fontWeight="bold">
-              Total amount
-            </Typography>
-            <Typography variant="body2">
-              {/* Rs. {cartItemList.reduce((acc, el) => acc + el.total, 0)} */}
-            </Typography>
+            <CircularProgress />
           </Stack>
-        </Stack>
-      )}
+        ) : null}
+
+        {!loading && isEmpty(cartItemList) ? (
+          <Stack
+            sx={{ width: "100%", minHeight: "calc(100%  - 64px - 160px)" }}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Stack sx={{ width: "50%", height: "50%", gap: "12px" }}>
+              <Typography variant="h6" sx={{ margin: "0 auto" }}>
+                There are no items in the cart. Please add items to cart.
+              </Typography>
+              <img
+                src={NO_ITEM_IN_CART}
+                alt="no products"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "block",
+                  backgroundSize: "cover",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                  objectFit: "cover",
+                }}
+              />
+            </Stack>
+          </Stack>
+        ) : null}
+
+        {!loading && !isEmpty(cartItemList) ? (
+          <Stack spacing={4}>
+            {cartItemList.map((product) => {
+              const { id } = product;
+              return (
+                <CartItem
+                  key={id}
+                  product={product}
+                  incrementalProductUpdate={incrementalProductUpdate}
+                  handleDeleteProduct={handleDeleteProduct}
+                  addProductToCart={addProductToCart}
+                />
+              );
+            })}
+
+            <Divider sx={{ borderColor: "unset", borderWidth: "1px" }} />
+
+            <Stack
+              direction="row"
+              spacing={2}
+              margin="0 auto"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Typography variant="h6" fontWeight="bold">
+                Total amount
+              </Typography>
+              <Stack direction="row" alignItems={"center"}>
+                &#8377;
+                <Typography variant="h6">
+                  {cartItemList
+                    ?.reduce?.((acc, el) => acc + el.quantity * el.price, 0)
+                    ?.toFixed(2)}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Stack>
+        ) : null}
+      </Box>
     </Box>
   );
 };
 
-export interface ICartProps {
-  product: IProduct;
-  handleDeleteProduct: (id: number, name: string | undefined) => void;
-}
-
 const CartItem = (props: ICartProps) => {
-  const { cartItemList, setCartItemList } = useAppContext();
   const [snackbarInfo, setSnackbarInfo] = useState({
     open: false,
     message: "",
     variant: "success",
   });
-  const { product, handleDeleteProduct } = props;
-  const { id, description, category, image, price, rating, stock, title } =
-    product || {};
-  const [quantity, setQuantity] = useState(1);
+  const {
+    product,
+    incrementalProductUpdate,
+    handleDeleteProduct,
+    addProductToCart,
+  } = props;
+  const { id, image, price, quantity, title } = product || {};
 
   const handleRemoveClick = () => {
-    const updatedCartItemList = cartItemList.map((el) => {
-      if (el.id === id) {
-        return { ...el, stock: el.stock + 1 };
-      }
-      return el;
-    });
-
-    setCartItemList([...updatedCartItemList]);
-    setQuantity((quantity) => quantity - 1);
+    addProductToCart({ id: id, quantity: quantity - 1 });
   };
 
   const handleAddClick = () => {
-    if (stock <= 0) {
-      //show msg when selected qty is >= available stock
-      setSnackbarInfo({
-        open: true,
-        message: "no more stock available",
-        variant: "warning",
-      });
-      return;
-    }
-
-    //update tshirt qty and price in cart if its available in cart
-    const updatedCartItemList = cartItemList.map((el) => {
-      if (el.id === id) {
-        return {
-          ...el,
-          stock: el.stock - 1,
-        };
-      }
-      return el;
-    });
-    setCartItemList([...updatedCartItemList]);
-    setQuantity((quantity) => quantity + 1);
+    addProductToCart({ id: id, quantity: quantity + 1 });
   };
 
   return (
@@ -194,47 +308,10 @@ const CartItem = (props: ICartProps) => {
         <Typography gutterBottom variant="h6" component="div">
           {title}
         </Typography>
-        {description ? (
-          <Tooltip title={description}>
-            <Typography
-              gutterBottom
-              variant="caption"
-              component="div"
-              width={"100%"}
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: "2",
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              {description}
-            </Typography>
-          </Tooltip>
-        ) : null}
-
-        <Stack gap="12px" alignItems="center" direction="row" flexWrap="wrap">
-          <Chip
-            icon={<StarPurple500SharpIcon />}
-            label={rating.rate}
-            size="small"
-          />{" "}
-          <Typography variant="caption">{rating.count} Rating</Typography>
-          <Chip label={category} size="small" variant="outlined" />
-        </Stack>
-
         <Stack direction="row" gap="8px" alignItems={"center"}>
           <Stack direction="row" alignItems={"center"}>
             &#8377;<Typography variant="h6"> {price}</Typography>
           </Stack>
-          <Typography
-            variant="caption"
-            width={"100%"}
-            color={stock === 0 ? "red" : "green"}
-          >
-            {stock === 0 ? "out of stock" : `${stock} in stock`}
-          </Typography>
         </Stack>
       </Stack>
       <Stack gap="24px">
@@ -262,7 +339,7 @@ const CartItem = (props: ICartProps) => {
               size="small"
               sx={{ color: "#fff" }}
               onClick={handleRemoveClick}
-              disabled={quantity === 1}
+              disabled={quantity === 1 || incrementalProductUpdate}
             >
               <RemoveIcon fontSize="inherit" />
             </IconButton>
@@ -274,21 +351,29 @@ const CartItem = (props: ICartProps) => {
               size="small"
               sx={{ color: "#fff" }}
               onClick={handleAddClick}
-              // disabled={stock === 0}
+              disabled={incrementalProductUpdate}
             >
               <AddIcon fontSize="inherit" />
             </IconButton>
           </Box>
           <Button
-            variant="outlined"
+            variant="contained"
             size="small"
             onClick={() => handleDeleteProduct(id, title)}
+            disabled={incrementalProductUpdate}
             sx={{
-              color: "#242525",
-              borderColor: "#242525",
+              width: "max-content",
+              background: "#0d0d0d",
               "&:hover": {
-                background: "#f2f6f8",
-                borderColor: "#242525",
+                background: "#0d0d0d",
+              },
+              "&.MuiButtonBase-root.Mui-disabled": {
+                color: "white",
+                background: "#0d0d0d",
+                cursor: "not-allowed",
+                "&:hover": {
+                  background: "#0d0d0d",
+                },
               },
             }}
           >

@@ -1,5 +1,5 @@
 import { Alert, Button, Chip, Grid, Stack, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router";
 import useFetchProductDetails from "../hooks/useFetchProductDetails";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -7,37 +7,90 @@ import { isEmpty } from "lodash";
 import StarPurple500SharpIcon from "@mui/icons-material/StarPurple500Sharp";
 import { useAppContext } from "../context";
 import Snackbar from "./Snackbar";
+import { getAddToCartUrl } from "../constants";
+import axios from "axios";
+import { IProduct } from "../types";
+import LoadingButton from "@mui/lab/LoadingButton";
+import SaveIcon from "@mui/icons-material/Save";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
-  const { loading, data, error } = useFetchProductDetails(id);
+  const { loading, data } = useFetchProductDetails(id);
   const { cartItemList, setCartItemList } = useAppContext();
-  const itProductAlreadyInCart = cartItemList.some(
+  const isProductAlreadyInCart = cartItemList.some(
     (prod) => prod.id === parseInt(id)
   );
 
   const { title, description, category, price, image, rating, stock } =
     data || {};
+  const [isAddToCartClicked, setIsAddToCartClicked] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({
     open: false,
     message: "",
     variant: "success",
   });
+  const [state, setState] = useState<{
+    loading: boolean;
+    cartData: { count: number; resources: Array<IProduct> };
+  }>({
+    loading: false,
+    cartData: {
+      count: 0,
+      resources: [],
+    },
+  });
+  const { loading: addToCartLoading } = state || {};
 
-  const [isAddToCartClicked, setIsAddToCartClicked] = useState(false);
+  const AddProductToCart = async ({
+    id,
+    quantity,
+  }: {
+    id: number;
+    quantity: number;
+  }) => {
+    setState({
+      loading: true,
+      cartData: {
+        count: 0,
+        resources: [],
+      },
+    });
+    try {
+      const { data, status } = await axios.post(getAddToCartUrl(), {
+        id: id,
+        quantity: quantity,
+      });
+      if (status === 201) {
+        setCartItemList(data?.resources || []);
+        setIsAddToCartClicked(true);
+        setState((prevState) => ({
+          ...prevState,
+          cartData: data,
+        }));
+        setSnackbarInfo({
+          open: true,
+          message: `${title} has been added to the cart`,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error("error occured while adding product to cart ", error);
+      setSnackbarInfo({
+        open: true,
+        message: `error occured while adding ${title} into cart`,
+        variant: "error",
+      });
+    } finally {
+      setState((prevState) => ({
+        ...prevState,
+        loading: false,
+      }));
+    }
+  };
 
   const handleAddToCart = () => {
-    setIsAddToCartClicked(true);
-    setSnackbarInfo({
-      open: true,
-      message: `${title} tshirt has been added to the cart`,
-      variant: "success",
-    });
-    setCartItemList((prevList) => [
-      ...prevList,
-      { ...data, stock: data.stock - 1 },
-    ]);
+    AddProductToCart({ id: parseInt(id), quantity: 1 });
   };
 
   return (
@@ -48,9 +101,10 @@ const ProductDetails = () => {
         minHeight: "calc(100%  - 64px - 160px)",
         flex: 1,
         gap: "16px",
+        overflow: "auto",
       }}
     >
-      {itProductAlreadyInCart && (
+      {isProductAlreadyInCart && (
         <Alert severity="info" sx={{ width: "100%", alignItems: "center" }}>
           <Stack direction="row" gap="16px" alignItems="center">
             <Typography variant="body2" component="div">
@@ -168,7 +222,7 @@ const ProductDetails = () => {
                   </Typography>
                 </Stack>
 
-                {isAddToCartClicked || itProductAlreadyInCart ? (
+                {isAddToCartClicked || isProductAlreadyInCart ? (
                   <Button
                     variant="contained"
                     size="small"
@@ -179,26 +233,38 @@ const ProductDetails = () => {
                       "&:hover": {
                         background: "#0d0d0d",
                       },
+                      marginBottom: "24px",
                     }}
                   >
                     Go to cart
                   </Button>
                 ) : (
-                  <Button
-                    variant="contained"
+                  <LoadingButton
                     size="small"
+                    loading={addToCartLoading}
+                    loadingPosition="start"
+                    startIcon={<SaveIcon color="inherit" />}
+                    variant="outlined"
                     onClick={handleAddToCart}
-                    fullWidth
-                    disabled={stock === 0}
+                    disabled={stock === 0 || isProductAlreadyInCart}
                     sx={{
+                      color: "white !important",
                       background: "#0d0d0d",
                       "&:hover": {
                         background: "#0d0d0d",
                       },
+                      "& .MuiLoadingButton-loadingIndicator": {
+                        color: "white",
+                        left: "unset",
+                      },
+                      "&.Mui-disabled": {
+                        cursor: "not-allowed !important",
+                      },
+                      marginBottom: "24px",
                     }}
                   >
                     Add to cart
-                  </Button>
+                  </LoadingButton>
                 )}
               </Stack>
             </Stack>
