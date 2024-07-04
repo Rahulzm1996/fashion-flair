@@ -21,7 +21,7 @@ import {
   removeItemFromCartUrl,
 } from "../constants";
 import axios from "axios";
-import { isEmpty } from "lodash";
+import { isEmpty, wrap } from "lodash";
 import { ICartProps } from "./types";
 
 const Cart = () => {
@@ -278,10 +278,13 @@ const CartItem = (props: ICartProps) => {
   return (
     <Stack
       key={id}
-      direction="row"
-      spacing={4}
-      alignItems="center"
-      justifyContent="space-evenly"
+      sx={{
+        alignItems: "center",
+        justifyContent: "space-evenly",
+        flexDirection: { xs: "column", sm: "row" },
+        rowGap: { xs: "16px", sm: "40px" },
+        columnGap: { xs: "0", sm: "16px" },
+      }}
     >
       <Box
         sx={{

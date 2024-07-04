@@ -18,8 +18,7 @@ const NotFoundPage = () => {
       <img
         src={NO_PAGE_FOUND_IMAGE_URL}
         alt="no page found"
-        width="380px !important"
-        height={400}
+        style={{ width: "400px", height: "400px" }}
       />
 
       <Typography variant="h6" sx={{ my: "16px !important" }}>

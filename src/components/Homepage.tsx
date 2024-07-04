@@ -2,7 +2,10 @@ import {
   Box,
   CircularProgress,
   Grid,
+  MenuItem,
   Pagination,
+  Select,
+  SelectChangeEvent,
   Stack,
   Typography,
 } from "@mui/material";
@@ -10,17 +13,21 @@ import { useEffect, useState } from "react";
 
 import { IProduct } from "../types";
 import SearchBar from "./SearchBar";
-import ProductsListing from "./ProductsListing";
 import useFetchProducts from "../hooks/useFetchProducts";
 import { NO_PRODUCTS_IMAGE_URL } from "../constants";
 import Product from "./Product";
 
 const PAGE_SIZE = 10;
+const ITEMS_PER_PAGE = [5, 10, 20, 50];
 const Homepage = () => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    size: PAGE_SIZE,
+  });
+  const { currentPage, size } = pagination;
   const { loading, productsData } = useFetchProducts({
     page: currentPage,
-    size: PAGE_SIZE,
+    size: size,
   });
   const [productsList, setproductsList] = useState<Array<IProduct>>([]);
 
@@ -29,7 +36,17 @@ const Homepage = () => {
   }, [productsData]);
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
-    setCurrentPage(page);
+    setPagination((prevPagination) => ({
+      ...prevPagination,
+      currentPage: page,
+    }));
+  };
+
+  const handleItemsPerPageChange = (event: SelectChangeEvent) => {
+    setPagination((prevPagination) => ({
+      ...prevPagination,
+      size: parseInt(event.target.value),
+    }));
   };
 
   return (
@@ -99,12 +116,43 @@ const Homepage = () => {
             ))}
           </Grid>
         ) : null}
-        <Pagination
-          count={Math.ceil(productsData.total / PAGE_SIZE)}
-          page={currentPage}
-          onChange={handlePageChange}
-          sx={{ display: "flex", justifyContent: "center", paddingTop: "24px" }}
-        />
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          gap="12px"
+          paddingTop="24px"
+        >
+          <Stack direction="row" gap="8px" alignItems="center">
+            <Typography variant="caption" fontWeight="600">
+              Items per page
+            </Typography>
+            <Select
+              value={"" + size}
+              // label="ItemsPerPage"
+              size="small"
+              onChange={handleItemsPerPageChange}
+              sx={{ height: "34px" }}
+              displayEmpty
+              inputProps={{ "aria-label": "Without label" }}
+            >
+              {ITEMS_PER_PAGE.map((size, index) => (
+                <MenuItem key={index} value={size}>
+                  {size}
+                </MenuItem>
+              ))}
+            </Select>
+          </Stack>
+          <Pagination
+            count={Math.ceil(productsData.total / size)}
+            page={currentPage}
+            onChange={handlePageChange}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          />
+        </Stack>
       </Box>
     </Stack>
   );
