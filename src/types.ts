@@ -22,9 +22,16 @@ export interface IProduct {
 
 export interface ICartItem extends IProduct {}
 
+export interface IStockDetails {
+  id: number;
+  stock: number;
+}
+
 export interface IAppProvider {
   cartItemList: Array<ICartItem>;
   setCartItemList: React.Dispatch<React.SetStateAction<ICartItem[]>>;
+  stockDetails: Array<IStockDetails>;
+  setStockDetails: React.Dispatch<React.SetStateAction<IStockDetails[]>>;
 }
 
 export interface ISearchBarProps {

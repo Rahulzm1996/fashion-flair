@@ -15,18 +15,34 @@ import Button from "@mui/material/Button";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import Badge from "@mui/material/Badge";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { NAVBAR_DRAWER_WIDTH } from "../constants";
+import { NAVBAR_DRAWER_WIDTH, getCartDetailsUrl } from "../constants";
 import { useAppContext } from "../context";
+import axios from "axios";
 
 const Navbar = () => {
   const { cartItemList } = useAppContext();
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+  const [cartItems, setCartItems] = useState([]);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
+
+  const fetchCartItems = async () => {
+    try {
+      const { data, status } = await axios.get(getCartDetailsUrl());
+      if (status === 200) {
+        setCartItems(data?.resources || []);
+      }
+    } catch (error) {
+      console.error("error occured while fetching cart items ", error);
+    }
+  };
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
 
   //shows it in menu of mobile view
   const drawer = (
@@ -120,7 +136,7 @@ const Navbar = () => {
               sx={{ color: "#fff" }}
             >
               <Badge
-                badgeContent={cartItemList.length}
+                badgeContent={cartItemList.length || cartItems.length}
                 sx={{
                   color: "#fff",
                   "& .MuiBadge-badge": {

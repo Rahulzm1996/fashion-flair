@@ -16,6 +16,8 @@ import SearchBar from "./SearchBar";
 import useFetchProducts from "../hooks/useFetchProducts";
 import { NO_PRODUCTS_IMAGE_URL } from "../constants";
 import Product from "./Product";
+import { useAppContext } from "../context";
+import _ from "lodash";
 
 const PAGE_SIZE = 10;
 const ITEMS_PER_PAGE = [5, 10, 20, 50];
@@ -30,9 +32,20 @@ const Homepage = () => {
     size: size,
   });
   const [productsList, setproductsList] = useState<Array<IProduct>>([]);
+  const { setStockDetails } = useAppContext();
 
   useEffect(() => {
     setproductsList(productsData?.resources);
+    const stockList = productsData?.resources?.map((product) => ({
+      id: product.id as number,
+      stock: product.stock,
+    }));
+
+    //keeping stock details in context, to be used in cart for validation stocks available for purchase
+    setStockDetails((prevStockDetails) => {
+      const mergedArray = _.unionBy(stockList, prevStockDetails, "id");
+      return mergedArray;
+    });
   }, [productsData]);
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {

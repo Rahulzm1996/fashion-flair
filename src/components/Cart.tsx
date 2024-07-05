@@ -25,7 +25,7 @@ import { isEmpty, wrap } from "lodash";
 import { ICartProps } from "./types";
 
 const Cart = () => {
-  const { cartItemList, setCartItemList } = useAppContext();
+  const { cartItemList, setCartItemList, stockDetails } = useAppContext();
   const [snackbarInfo, setSnackbarInfo] = useState({
     open: false,
     message: "",
@@ -211,7 +211,7 @@ const Cart = () => {
         ) : null}
 
         {!loading && !isEmpty(cartItemList) ? (
-          <Stack spacing={4}>
+          <Stack spacing={5}>
             {cartItemList.map((product) => {
               const { id } = product;
               return (
@@ -266,12 +266,22 @@ const CartItem = (props: ICartProps) => {
     addProductToCart,
   } = props;
   const { id, image, price, quantity, title } = product || {};
+  const { stockDetails } = useAppContext();
 
   const handleRemoveClick = () => {
     addProductToCart({ id: id, quantity: quantity - 1 });
   };
 
   const handleAddClick = () => {
+    const stock = stockDetails?.find((product) => product.id === id)?.stock;
+    if (quantity >= stock) {
+      setSnackbarInfo({
+        open: true,
+        message: `${title} out of stock!`,
+        variant: "warning",
+      });
+      return;
+    }
     addProductToCart({ id: id, quantity: quantity + 1 });
   };
 
